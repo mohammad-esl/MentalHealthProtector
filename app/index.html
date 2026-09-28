@@ -18,11 +18,11 @@
     <div class="stats" aria-live="polite"><span id="count" class="pill">—</span><span id="done" class="pill">—</span><span id="overdueCount" class="pill">—</span></div>
   </section>
   <div id="error" class="error" hidden></div><div id="empty" class="empty" hidden>تسکی با این فیلترها پیدا نشد.</div>
-  <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات</th></tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>قدم‌ها / زیرتسک‌ها</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات و گزارش اقدام‌ها</th></tr></thead><tbody id="rows"></tbody></table></div>
   <p class="foot">کارهای انجام‌شده حذف نمی‌شوند؛ برای دیدن فهرست و تاریخچه، صفحهٔ «انجام‌شده‌ها و تاریخچه» را باز کن. نمایشگر داده را تغییر نمی‌دهد.</p>
 </main><script src="shared.js"></script><script>
 (() => {
-  const A = window.TaskApp, KEYS = ["شناسه","عنوان","اولویت","موعد","وضعیت","پروژه","خلاصهٔ قدم بعدی","دلیل اولویت","توضیحات"];
+  const A = window.TaskApp, KEYS = ["شناسه","عنوان","قدم‌ها / زیرتسک‌ها","اولویت","موعد","وضعیت","پروژه","خلاصهٔ قدم بعدی","دلیل اولویت","توضیحات"];
   const order = {"فوری":0,"بالا":1,"متوسط":2,"پایین":3,"نامشخص":4}; let tasks = [], activeTasks = [];
   const byId = (id) => document.getElementById(id);
   A.nav("tasks");
@@ -40,9 +40,9 @@
       const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&!db)return -1;if(!da&&db)return 1;if(da&&db&&da-db)return da-db;return a["شناسه"].localeCompare(b["شناسه"]);
     });
   }
-  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}
+  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);A.cell(tr,t["قدم‌ها / زیرتسک‌ها"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}
     const open=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));const done=tasks.filter(t=>t["وضعیت"]==="انجام‌شده");const overdue=open.filter(t=>{const d=A.dateValue(t["موعد"]);return d&&d<A.today()});byId("count").textContent=list.length+" از "+open.length+" تسک باز";byId("done").textContent="انجام‌شده: "+done.length;byId("overdueCount").textContent="عقب‌افتاده: "+overdue.length;byId("empty").hidden=list.length>0;}
-  async function load(){byId("error").hidden=true;try{tasks=A.parseTable(await A.read("../TASKS.md"),KEYS);activeTasks=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="منبع: TASKS.md";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
+  async function load(){byId("error").hidden=true;try{tasks=A.parseTable(await A.readData("TASKS.md"),KEYS);activeTasks=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="محیط "+A.environments[A.environment()]+" · منبع: TASKS.md";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
   ["search","priority","status","project","deadline"].forEach(id=>byId(id).addEventListener("input",render));byId("reset").addEventListener("click",()=>{["search","priority","status","project","deadline"].forEach(id=>byId(id).value="");render()});byId("reload").addEventListener("click",load);load();
 })();
 </script></body></html>
