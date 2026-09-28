@@ -32,7 +32,7 @@ description: "Use chat to clarify, prioritize, decompose, and track work or pers
 - `data/<environment>/INBOX.md` — ورودی خام
 - `data/<environment>/PROJECTS/` — زمینه و تصمیم‌ها، بدون کپی فهرست تسک‌ها
 - `data/<environment>/ARCHIVE/` — پرونده‌های بایگانی‌شده
-- `data/<environment>/گزارش‌ها/` — گزارش‌های کوتاه همان محیط
+- `data/<environment>/Reports/` — گزارش‌های کوتاه همان محیط
 
 ## نمایشگر محلی
 
