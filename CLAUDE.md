@@ -1,5 +1,5 @@
 # راهنمای Claude Code
 
-برای مدیریت تسک‌ها در این ریپو، دستورهای [AGENTS.md](AGENTS.md)، [Skill همراه مدیریت کارها](.agents/skills/task-companion/SKILL.md) و در صورت نیاز [WORKFLOW.md](WORKFLOW.md) را دنبال کن.
+برای مدیریت کارها از [AGENTS.md](AGENTS.md)، [.agents/skills/task-companion/SKILL.md](.agents/skills/task-companion/SKILL.md) و [WORKFLOW.md](WORKFLOW.md) پیروی کن. ورودی فقط از چت است؛ خودت `TASKS.md`، `STEPS.md`، `HISTORY.md`، `PEOPLE.md`، `MEMORY.md` و `FOCUS.md` را نگه دار.
 
-کاربر فقط از راه چت ورودی می‌دهد. اگر جزئیاتی برای اولویت یا اقدام بعدی لازم است، خودت کوتاه بپرس و بر اساس پاسخ جدول `TASKS.md` را به‌روز کن. از کاربر نخواه فایل‌ها را دستی ویرایش کند.
+برای توسعهٔ سامانه، ابتدا [DESIGN.md](DESIGN.md) و فایل‌های فعلی را بخوان. رابط باید Markdown را بخواند و داده را در کد یا JSON تکثیر نکند. تغییر حافظهٔ پایدار فقط با تأیید کاربر مجاز است؛ جزئیات جاری پروژه را با حافظهٔ پایدار اشتباه نگیر.

@@ -1,182 +1,52 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>فهرست کارها</title>
-  <style>
-    :root { color-scheme: light; --ink: #1e293b; --muted: #64748b; --line: #dbe3ec; --paper: #fff; --wash: #f4f7fb; --brand-wash: #e8f1fa; --danger: #a33838; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--wash); color: var(--ink); font-family: Tahoma, "Segoe UI", sans-serif; line-height: 1.65; }
-    main { width: min(1180px, calc(100% - 32px)); margin: 32px auto; }
-    header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
-    h1 { margin: 0 0 4px; font-size: clamp(1.5rem, 3vw, 2rem); }
-    .subtitle, .source { margin: 0; color: var(--muted); }
-    .source { font-size: .85rem; }
-    .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: 0 4px 18px #18314d0a; }
-    .filters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(145px, 1fr)) auto; gap: 12px; align-items: end; }
-    label { display: grid; gap: 5px; color: #475569; font-size: .86rem; }
-    input, select, button { min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: var(--ink); font: inherit; padding: 7px 10px; }
-    input:focus, select:focus, button:focus-visible { outline: 3px solid #8bb9e8; outline-offset: 1px; }
-    button { cursor: pointer; }
-    button:hover { background: var(--brand-wash); }
-    .stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 0; color: var(--muted); font-size: .9rem; }
-    .pill { border-radius: 999px; padding: 3px 10px; background: var(--wash); }
-    .table-wrap { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); border-radius: 10px; }
-    table { width: 100%; min-width: 860px; border-collapse: collapse; background: white; }
-    th, td { padding: 11px 12px; text-align: right; vertical-align: top; border-bottom: 1px solid var(--line); }
-    th { position: sticky; top: 0; background: #f8fafc; color: #334155; font-size: .86rem; white-space: nowrap; }
-    th button { min-height: 30px; padding: 2px 4px; border: 0; background: transparent; font-weight: 700; }
-    tr:last-child td { border-bottom: 0; }
-    tbody tr:hover { background: #f8fbff; }
-    td { font-size: .9rem; }
-    .priority, .status { display: inline-block; white-space: nowrap; border-radius: 999px; padding: 1px 9px; font-size: .82rem; background: var(--wash); }
-    .priority[data-value="فوری"], .priority[data-value="بالا"] { color: #8e2929; background: #fdecec; }
-    .priority[data-value="متوسط"] { color: #80530d; background: #fff4d7; }
-    .priority[data-value="پایین"] { color: #276044; background: #e8f6ee; }
-    .status[data-value="نیاز به پاسخ"] { color: #80530d; background: #fff4d7; }
-    .status[data-value="انجام‌شده"] { color: #276044; background: #e8f6ee; }
-    .overdue { color: var(--danger); font-weight: 700; }
-    .empty, .error { padding: 24px; text-align: center; color: var(--muted); }
-    .error { color: var(--danger); background: #fff7f7; border: 1px solid #f3cccc; border-radius: 10px; }
-    .error code { direction: ltr; display: inline-block; color: var(--ink); background: #f1f5f9; padding: 2px 6px; border-radius: 5px; }
-    .foot { margin-top: 12px; color: var(--muted); font-size: .82rem; }
-    @media (max-width: 850px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } header.top { align-items: flex-start; flex-direction: column; } }
-    @media (max-width: 520px) { main { width: min(100% - 20px, 1180px); margin: 18px auto; } .panel { padding: 13px; } .filters { grid-template-columns: 1fr; } }
-  </style>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>کارها | همراه مدیریت کارها</title><link rel="stylesheet" href="shared.css">
 </head>
-<body>
-  <main>
-    <header class="top">
-      <div><h1>فهرست کارها</h1><p class="subtitle">بر پایهٔ جدول Markdown؛ تغییر تسک‌ها را در چت با Agent انجام بده.</p></div>
-      <div><p id="source" class="source">در حال خواندن TASKS.md…</p><button id="reload" type="button">به‌روزرسانی</button></div>
-    </header>
-    <section class="panel" aria-label="فیلتر تسک‌ها">
-      <div class="filters">
-        <label>جست‌وجو<input id="search" type="search" placeholder="عنوان، پروژه یا قدم بعدی"></label>
-        <label>اولویت<select id="priorityFilter"><option value="">همهٔ اولویت‌ها</option></select></label>
-        <label>وضعیت<select id="statusFilter"><option value="">همهٔ وضعیت‌ها</option></select></label>
-        <label>پروژه<select id="projectFilter"><option value="">همهٔ پروژه‌ها</option></select></label>
-        <label>موعد<select id="deadlineFilter"><option value="">همه</option><option value="overdue">عقب‌افتاده</option><option value="week">۷ روز آینده</option><option value="none">بدون موعد</option></select></label>
-        <button id="reset" type="button">پاک‌کردن فیلترها</button>
-      </div>
-      <div class="stats" aria-live="polite"><span id="count" class="pill">—</span><span id="overdueCount" class="pill">—</span></div>
-    </section>
-    <div id="error" class="error" hidden></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr>
-          <th><button type="button" data-sort="title">عنوان</button></th>
-          <th><button type="button" data-sort="priority">اولویت</button></th>
-          <th><button type="button" data-sort="deadline">موعد</button></th>
-          <th><button type="button" data-sort="status">وضعیت</button></th>
-          <th><button type="button" data-sort="project">پروژه</button></th>
-          <th><button type="button" data-sort="next">قدم بعدی</button></th>
-          <th><button type="button" data-sort="reason">دلیل اولویت</button></th>
-        </tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
-      <div id="empty" class="empty" hidden>تسکی با این فیلترها پیدا نشد.</div>
+<body><main>
+  <header class="top"><div><h1>کارها</h1><p class="subtitle">تسک‌ها را در گفت‌وگو با Agent مدیریت کن؛ این صفحه فقط‌خواندنی است.</p></div><p id="source" class="source">در حال خواندن TASKS.md…</p></header>
+  <section class="panel" aria-label="فیلتر تسک‌ها">
+    <div class="filters">
+      <label>جست‌وجو<input id="search" type="search" placeholder="شناسه، عنوان، پروژه یا قدم بعدی"></label>
+      <label>اولویت<select id="priority"><option value="">همهٔ اولویت‌ها</option></select></label>
+      <label>وضعیت<select id="status"><option value="">همهٔ وضعیت‌ها</option></select></label>
+      <label>پروژه<select id="project"><option value="">همهٔ پروژه‌ها</option></select></label>
+      <label>موعد<select id="deadline"><option value="">همهٔ موعدها</option><option value="overdue">عقب‌افتاده</option><option value="week">۷ روز آینده</option><option value="none">بدون موعد</option></select></label>
+      <button id="reset" type="button">پاک‌کردن فیلترها</button><button id="reload" type="button">به‌روزرسانی</button>
     </div>
-    <p class="foot">برای مرتب‌سازی، روی عنوان هر ستون بزن. ترتیب اولیه: کارهای باز، اولویت و سپس نزدیک‌ترین موعد. این صفحه فقط نمایش می‌دهد و TASKS.md را تغییر نمی‌دهد.</p>
-  </main>
-  <script>
-    const PRIORITY_ORDER = { "فوری": 0, "بالا": 1, "متوسط": 2, "پایین": 3, "نامشخص": 4, "—": 4, "-": 4 };
-    const STATUS_ORDER = { "نیاز به پاسخ": 0, "در حال انجام": 1, "برنامه‌ریزی‌شده": 2, "منتظر": 3, "انجام‌شده": 4, "کنار گذاشته‌شده": 5 };
-    const KEYS = ["title", "priority", "deadline", "status", "project", "next", "reason"];
-    let tasks = [];
-    let sortKey = "priority";
-    let sortDirection = 1;
-    let initialSort = true;
-    const byId = (id) => document.getElementById(id);
-    const normalize = (value) => String(value || "").normalize("NFKC").replace(/[\u200c\u200f]/g, "").replace(/\u064a/g, "ی").replace(/\u0643/g, "ک").toLocaleLowerCase("fa").trim();
-    const cellsFromRow = (line) => line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
-    const isRule = (line) => /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line.trim());
-    function parseTasks(markdown) {
-      const tableLines = markdown.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.startsWith("|"));
-      if (tableLines.length < 2) return [];
-      const header = cellsFromRow(tableLines[0]);
-      const required = ["عنوان", "اولویت", "موعد", "وضعیت", "پروژه", "قدم بعدی", "دلیل اولویت"];
-      if (!required.every((name) => header.includes(name))) throw new Error("سرستون‌های جدول TASKS.md با قالب برنامه هماهنگ نیست.");
-      const indexes = required.map((name) => header.indexOf(name));
-      return tableLines.slice(1).filter((line) => !isRule(line)).map(cellsFromRow).filter((cells) => cells.length >= header.length).map((cells) => {
-        const values = indexes.map((index) => cells[index] || "—");
-        return Object.fromEntries(KEYS.map((key, index) => [key, values[index]]));
-      }).filter((task) => task.title && !["—", "-", "خالی", "هنوز تسکی ثبت نشده"].includes(task.title));
-    }
-    function dateValue(value) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-      const date = new Date(value + "T00:00:00");
-      return Number.isNaN(date.valueOf()) ? null : date;
-    }
-    function priorityRank(value) { return PRIORITY_ORDER[value] ?? 4; }
-    function compare(a, b, key) {
-      if (key === "priority") return priorityRank(a.priority) - priorityRank(b.priority);
-      if (key === "deadline") { const da = dateValue(a.deadline); const db = dateValue(b.deadline); return (da?.valueOf() ?? Infinity) - (db?.valueOf() ?? Infinity); }
-      if (key === "status") return (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9);
-      return a[key].localeCompare(b[key], "fa", { sensitivity: "base" });
-    }
-    function isOpen(task) { return !["انجام‌شده", "کنار گذاشته‌شده"].includes(task.status); }
-    function matches(task) {
-      const query = normalize(byId("search").value);
-      const priority = byId("priorityFilter").value;
-      const status = byId("statusFilter").value;
-      const project = byId("projectFilter").value;
-      const dateMode = byId("deadlineFilter").value;
-      const haystack = normalize(KEYS.map((key) => task[key]).join(" "));
-      if (query && !haystack.includes(query)) return false;
-      if (priority && task.priority !== priority) return false;
-      if (status && task.status !== status) return false;
-      if (project && task.project !== project) return false;
-      const due = dateValue(task.deadline);
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      if (dateMode === "none" && due) return false;
-      if (dateMode === "overdue" && (!due || due >= today || !isOpen(task))) return false;
-      if (dateMode === "week") { const limit = new Date(today); limit.setDate(limit.getDate() + 7); if (!due || due < today || due > limit || !isOpen(task)) return false; }
-      return true;
-    }
-    function fillFilter(id, values, label) {
-      const select = byId(id);
-      const selected = select.value;
-      select.replaceChildren(new Option(label, ""));
-      [...new Set(values.filter((value) => value && value !== "—" && value !== "-") )].sort((a, b) => a.localeCompare(b, "fa")).forEach((value) => select.add(new Option(value, value)));
-      if ([...select.options].some((option) => option.value === selected)) select.value = selected;
-    }
-    function makeCell(value, kind) {
-      const cell = document.createElement("td");
-      if (kind === "priority" || kind === "status") { const badge = document.createElement("span"); badge.className = kind; badge.dataset.value = value; badge.textContent = value; cell.append(badge); }
-      else { cell.textContent = value || "—"; if (kind === "deadline") { const due = dateValue(value); const today = new Date(); today.setHours(0, 0, 0, 0); if (due && due < today && isOpen(currentTask)) cell.classList.add("overdue"); } }
-      return cell;
-    }
-    let currentTask = null;
-    function render() {
-      const visible = tasks.filter(matches).sort((a, b) => {
-        if (initialSort && isOpen(a) !== isOpen(b)) return isOpen(a) ? -1 : 1;
-        if (sortKey === "deadline") { const da = dateValue(a.deadline); const db = dateValue(b.deadline); if (!da && db) return 1; if (da && !db) return -1; }
-        const first = compare(a, b, sortKey) * sortDirection; if (first) return first;
-        const dateOrder = compare(a, b, "deadline"); if (dateOrder) return dateOrder;
-        return compare(a, b, "title");
-      });
-      const tbody = byId("rows"); tbody.replaceChildren();
-      visible.forEach((task) => { currentTask = task; const row = document.createElement("tr"); KEYS.forEach((key) => row.append(makeCell(task[key], key))); tbody.append(row); }); currentTask = null;
-      byId("empty").hidden = visible.length > 0;
-      const openCount = tasks.filter(isOpen).length;
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const overdue = tasks.filter((task) => { const date = dateValue(task.deadline); return isOpen(task) && date && date < today; }).length;
-      byId("count").textContent = visible.length + " از " + tasks.length + " تسک · باز: " + openCount;
-      byId("overdueCount").textContent = "عقب‌افتاده: " + overdue;
-      document.querySelectorAll("th button[data-sort]").forEach((button) => { button.textContent = button.textContent.replace(/[ ↑↓]$/, ""); if (button.dataset.sort === sortKey) button.textContent += sortDirection === 1 ? " ↑" : " ↓"; });
-    }
-    async function load() {
-      byId("error").hidden = true;
-      try { const response = await fetch("../TASKS.md", { cache: "no-store" }); if (!response.ok) throw new Error("TASKS.md پیدا نشد."); tasks = parseTasks(await response.text()); byId("source").textContent = "منبع: TASKS.md"; fillFilter("priorityFilter", tasks.map((task) => task.priority), "همهٔ اولویت‌ها"); fillFilter("statusFilter", tasks.map((task) => task.status), "همهٔ وضعیت‌ها"); fillFilter("projectFilter", tasks.map((task) => task.project), "همهٔ پروژه‌ها"); render(); }
-      catch (error) { byId("error").hidden = false; byId("error").textContent = "فهرست بارگذاری نشد. پوشهٔ اصلی ریپو را در ترمینال باز کن و اجرا کن: "; const code = document.createElement("code"); code.textContent = "py -m http.server 8081 --bind 127.0.0.1"; byId("error").append(code, document.createTextNode(" سپس در مرورگر به http://127.0.0.1:8081/app/ برو. جزئیات: " + error.message)); byId("source").textContent = "فهرست بارگذاری نشد"; }
-    }
-    ["search", "priorityFilter", "statusFilter", "projectFilter", "deadlineFilter"].forEach((id) => byId(id).addEventListener("input", render));
-    byId("reset").addEventListener("click", () => { byId("search").value = ""; ["priorityFilter", "statusFilter", "projectFilter", "deadlineFilter"].forEach((id) => byId(id).value = ""); render(); });
-    document.querySelectorAll("th button[data-sort]").forEach((button) => button.addEventListener("click", () => { initialSort = false; if (sortKey === button.dataset.sort) sortDirection *= -1; else { sortKey = button.dataset.sort; sortDirection = 1; } render(); }));
-    byId("reload").addEventListener("click", load);
-    load();
-  </script>
-</body>
-</html>
+    <div class="stats" aria-live="polite"><span id="count" class="pill">—</span><span id="done" class="pill">—</span><span id="overdueCount" class="pill">—</span></div>
+  </section>
+  <div id="error" class="error" hidden></div><div id="empty" class="empty" hidden>تسکی با این فیلترها پیدا نشد.</div>
+  <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات</th></tr></thead><tbody id="rows"></tbody></table></div>
+  <p class="foot">کارهای انجام‌شده حذف نمی‌شوند؛ برای دیدن فهرست و تاریخچه، صفحهٔ «انجام‌شده‌ها و تاریخچه» را باز کن. نمایشگر داده را تغییر نمی‌دهد.</p>
+</main><script src="shared.js"></script><script>
+(() => {
+  const A = window.TaskApp, KEYS = ["شناسه","عنوان","اولویت","موعد","وضعیت","پروژه","خلاصهٔ قدم بعدی","دلیل اولویت","توضیحات"];
+  const order = {"فوری":0,"بالا":1,"متوسط":2,"پایین":3,"نامشخص":4}; let tasks = [], activeTasks = [];
+  const byId = (id) => document.getElementById(id);
+  A.nav("tasks");
+  function fill(id, key, label) { const select=byId(id), current=select.value; select.replaceChildren(new Option(label,"")); [...new Set(activeTasks.map(t=>t[key]).filter(v=>v&&v!=="—"))].sort((a,b)=>a.localeCompare(b,"fa")).forEach(v=>select.add(new Option(v,v))); if([...select.options].some(o=>o.value===current))select.value=current; }
+  function filtered() {
+    const q=A.normalize(byId("search").value), p=byId("priority").value, s=byId("status").value, project=byId("project").value, mode=byId("deadline").value, now=A.today();
+    return activeTasks.filter(t=>{
+      if(q&&!A.normalize(KEYS.map(k=>t[k]).join(" ")).includes(q))return false;
+      if(p&&t["اولویت"]!==p)return false;if(s&&t["وضعیت"]!==s)return false;if(project&&t["پروژه"]!==project)return false;
+      const d=A.dateValue(t["موعد"]);if(mode==="none"&&d)return false;if(mode==="overdue"&&(!d||d>=now||["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"])))return false;
+      if(mode==="week"){const end=new Date(now);end.setDate(end.getDate()+7);if(!d||d<now||d>end||["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]))return false;}return true;
+    }).sort((a,b)=>{
+      const aOpen=!["انجام‌شده","کنارگذاشته‌شده"].includes(a["وضعیت"]),bOpen=!["انجام‌شده","کنارگذاشته‌شده"].includes(b["وضعیت"]);if(aOpen!==bOpen)return aOpen?-1:1;
+      const pr=(order[a["اولویت"]]??4)-(order[b["اولویت"]]??4);if(pr)return pr;
+      const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&!db)return -1;if(!da&&db)return 1;if(da&&db&&da-db)return da-db;return a["شناسه"].localeCompare(b["شناسه"]);
+    });
+  }
+  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}
+    const open=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));const done=tasks.filter(t=>t["وضعیت"]==="انجام‌شده");const overdue=open.filter(t=>{const d=A.dateValue(t["موعد"]);return d&&d<A.today()});byId("count").textContent=list.length+" از "+open.length+" تسک باز";byId("done").textContent="انجام‌شده: "+done.length;byId("overdueCount").textContent="عقب‌افتاده: "+overdue.length;byId("empty").hidden=list.length>0;}
+  async function load(){byId("error").hidden=true;try{tasks=A.parseTable(await A.read("../TASKS.md"),KEYS);activeTasks=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="منبع: TASKS.md";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
+  ["search","priority","status","project","deadline"].forEach(id=>byId(id).addEventListener("input",render));byId("reset").addEventListener("click",()=>{["search","priority","status","project","deadline"].forEach(id=>byId(id).value="");render()});byId("reload").addEventListener("click",load);load();
+})();
+</script></body></html>
+
+
+
+
