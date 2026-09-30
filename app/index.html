@@ -17,6 +17,17 @@
     </div>
     <div class="stats" aria-live="polite"><span id="count" class="pill">—</span><span id="done" class="pill">—</span><span id="overdueCount" class="pill">—</span></div>
   </section>
+  <section class="panel matrix-panel" aria-labelledby="matrix-title">
+    <div class="matrix-heading"><div><h2 id="matrix-title">ماتریس آیزنهاور</h2><p class="kicker">مهم: اولویت فوری یا بالا · فوری: موعد امروز/گذشته یا اولویت فوری. تسک‌های منتظر و موارد با موعد یا اولویت نامشخص جدا نمایش داده می‌شوند.</p></div><span id="matrix-total" class="pill" aria-live="polite">—</span></div>
+    <div class="matrix-grid">
+      <section class="matrix-quadrant" data-quadrant="do" aria-labelledby="matrix-do-title"><div class="matrix-quadrant-head"><h3 id="matrix-do-title">مهم و فوری <small>انجام</small></h3><span id="matrix-do-count" class="pill">۰</span></div><ol id="matrix-do" class="matrix-list"></ol></section>
+      <section class="matrix-quadrant" data-quadrant="delegate" aria-labelledby="matrix-delegate-title"><div class="matrix-quadrant-head"><h3 id="matrix-delegate-title">کم‌اهمیت‌تر و فوری <small>بررسی واگذاری</small></h3><span id="matrix-delegate-count" class="pill">۰</span></div><ol id="matrix-delegate" class="matrix-list"></ol></section>
+      <section class="matrix-quadrant" data-quadrant="schedule" aria-labelledby="matrix-schedule-title"><div class="matrix-quadrant-head"><h3 id="matrix-schedule-title">مهم و غیرفوری <small>زمان‌بندی</small></h3><span id="matrix-schedule-count" class="pill">۰</span></div><ol id="matrix-schedule" class="matrix-list"></ol></section>
+      <section class="matrix-quadrant" data-quadrant="review" aria-labelledby="matrix-review-title"><div class="matrix-quadrant-head"><h3 id="matrix-review-title">کم‌اهمیت‌تر و غیرفوری <small>بازنگری</small></h3><span id="matrix-review-count" class="pill">۰</span></div><ol id="matrix-review" class="matrix-list"></ol></section>
+    </div>
+    <section class="matrix-waiting" aria-labelledby="matrix-waiting-title"><div class="matrix-quadrant-head"><h3 id="matrix-waiting-title">در انتظار</h3><span id="matrix-waiting-count" class="pill">۰</span></div><ol id="matrix-waiting" class="matrix-list"></ol></section>
+    <section class="matrix-undecided" aria-labelledby="matrix-undecided-title"><div class="matrix-quadrant-head"><h3 id="matrix-undecided-title">نیازمند تعیین اهمیت یا فوریت</h3><span id="matrix-undecided-count" class="pill">۰</span></div><ol id="matrix-undecided" class="matrix-list"></ol></section>
+  </section>
   <div id="error" class="error" hidden></div><div id="empty" class="empty" hidden>تسکی با این فیلترها پیدا نشد.</div>
   <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>قدم‌ها / زیرتسک‌ها</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات و گزارش اقدام‌ها</th></tr></thead><tbody id="rows"></tbody></table></div>
   <p class="foot">کارهای انجام‌شده حذف نمی‌شوند؛ برای دیدن فهرست و تاریخچه، صفحهٔ «انجام‌شده‌ها و تاریخچه» را باز کن. نمایشگر داده را تغییر نمی‌دهد.</p>
@@ -26,6 +37,36 @@
   const order = {"فوری":0,"بالا":1,"متوسط":2,"پایین":3,"نامشخص":4}; let tasks = [], activeTasks = [];
   const byId = (id) => document.getElementById(id);
   A.nav("tasks");
+  function matrixGroup(task, today) {
+    if(task["وضعیت"]==="منتظر")return "waiting";
+    const priority=task["اولویت"], due=A.dateValue(task["موعد"]);
+    const important=["فوری","بالا"].includes(priority) ? true : ["متوسط","پایین"].includes(priority) ? false : null;
+    const urgent=priority==="فوری" ? true : due ? due<=today : null;
+    if(important===null || urgent===null)return "undecided";
+    return important ? (urgent ? "do" : "schedule") : (urgent ? "delegate" : "review");
+  }
+  function renderMatrix(list) {
+    const groups={do:[],delegate:[],schedule:[],review:[],waiting:[],undecided:[]}, today=A.today();
+    for(const task of list)groups[matrixGroup(task,today)].push(task);
+    for(const [key,items] of Object.entries(groups)) {
+      items.sort((a,b)=>{const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&db&&da-db)return da-db;if(da&&!db)return -1;if(!da&&db)return 1;return (order[a["اولویت"]]??4)-(order[b["اولویت"]]??4)||a["شناسه"].localeCompare(b["شناسه"]);});
+      const container=byId("matrix-"+key);container.replaceChildren();
+      for(const task of items) {
+        const item=document.createElement("li"), link=document.createElement("a"), meta=document.createElement("span");
+        link.href="#task-"+task["شناسه"];link.textContent=task["شناسه"]+" · "+task["عنوان"];
+        meta.className="matrix-task-meta";
+        const missing=[];
+        if(key==="undecided") { if(!["فوری","بالا","متوسط","پایین"].includes(task["اولویت"]))missing.push("اهمیت نامشخص");if(task["اولویت"]!=="فوری"&&!A.dateValue(task["موعد"]))missing.push("فوریت نامشخص"); }
+        meta.textContent=[task["پروژه"],"اولویت: "+task["اولویت"],"موعد: "+task["موعد"],task["وضعیت"],...missing].filter(v=>v&&v!=="—").join(" · ");
+        item.append(link,meta);
+        if(task["خلاصهٔ قدم بعدی"]&&task["خلاصهٔ قدم بعدی"]!=="—") {const next=document.createElement("span");next.className="matrix-task-next";next.textContent="قدم بعدی: "+task["خلاصهٔ قدم بعدی"];item.append(next);}
+        container.append(item);
+      }
+      if(!items.length){const empty=document.createElement("li");empty.className="matrix-list-empty";empty.textContent="موردی نیست";container.append(empty);}
+      byId("matrix-"+key+"-count").textContent=items.length.toLocaleString("fa-IR");
+    }
+    byId("matrix-total").textContent=list.length.toLocaleString("fa-IR")+" تسک نمایشی";
+  }
   function fill(id, key, label) { const select=byId(id), current=select.value; select.replaceChildren(new Option(label,"")); [...new Set(activeTasks.map(t=>t[key]).filter(v=>v&&v!=="—"))].sort((a,b)=>a.localeCompare(b,"fa")).forEach(v=>select.add(new Option(v,v))); if([...select.options].some(o=>o.value===current))select.value=current; }
   function filtered() {
     const q=A.normalize(byId("search").value), p=byId("priority").value, s=byId("status").value, project=byId("project").value, mode=byId("deadline").value, now=A.today();
@@ -40,7 +81,7 @@
       const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&!db)return -1;if(!da&&db)return 1;if(da&&db&&da-db)return da-db;return a["شناسه"].localeCompare(b["شناسه"]);
     });
   }
-  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);A.cell(tr,t["قدم‌ها / زیرتسک‌ها"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}
+  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");tr.id="task-"+t["شناسه"];A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);A.cell(tr,t["قدم‌ها / زیرتسک‌ها"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}renderMatrix(list);
     const open=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));const done=tasks.filter(t=>t["وضعیت"]==="انجام‌شده");const overdue=open.filter(t=>{const d=A.dateValue(t["موعد"]);return d&&d<A.today()});byId("count").textContent=list.length+" از "+open.length+" تسک باز";byId("done").textContent="انجام‌شده: "+done.length;byId("overdueCount").textContent="عقب‌افتاده: "+overdue.length;byId("empty").hidden=list.length>0;}
   async function load(){byId("error").hidden=true;try{tasks=A.parseTable(await A.readData("TASKS.md"),KEYS);activeTasks=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="محیط "+A.environments[A.environment()]+" · منبع: TASKS.md";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
   ["search","priority","status","project","deadline"].forEach(id=>byId(id).addEventListener("input",render));byId("reset").addEventListener("click",()=>{["search","priority","status","project","deadline"].forEach(id=>byId(id).value="");render()});byId("reload").addEventListener("click",load);load();
