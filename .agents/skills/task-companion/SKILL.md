@@ -18,6 +18,7 @@ description: "Use chat to clarify, prioritize, decompose, and track work or pers
 - تمرکز در `data/<environment>/FOCUS.md`: یک کار اصلی و حداکثر دو گزینه.
 - انجام‌شده‌ها را حذف نکن. وضعیت را تکمیل کن و رویداد را با زمان محلی دقیق در `data/<environment>/HISTORY.md` ثبت کن. تاریخچه الحاقی است.
 - افراد و رابطه‌ها را در `data/<environment>/PEOPLE.md` فقط بر پایهٔ گفتهٔ روشن/منبع ثبت کن؛ حدس نزن.
+- یافته‌های قابل‌استفادهٔ دوباره و دارایی‌های مرتبط با کار را در `data/<environment>/KNOWLEDGE.md` همان محیط نمایه کن. هنگام حل مسئله، مدخل و منبع اصلی را بازیابی کن و اعتبار و تازگی آن را بررسی کن؛ قواعد در [راهنمای منبع دانش](../../../system/KNOWLEDGE.ReadOnly.md) است.
 - حافظهٔ پایدار فقط در `data/<environment>/MEMORY.md` همان محیط است. درخواست موردی را انجام بده؛ اگر درخواست، قاعدهٔ پایدار تازه‌ای می‌سازد، بپرس آیا کاربر می‌خواهد آن را در حافظه ذخیره کنی. بدون تأیید ننویس.
 - در اولین نوبت مدیریت کارها در هر ماه، الگوهای تکراری را مرور و فقط پیشنهادهای معنادار را برای تأیید مطرح کن؛ از یک مورد منفرد قانون نساز.
 
@@ -32,6 +33,7 @@ description: "Use chat to clarify, prioritize, decompose, and track work or pers
 - `data/<environment>/FOCUS.md` — تمرکز کوتاه‌مدت
 - `data/<environment>/HISTORY.md` — رویدادهای انجام‌شده
 - `data/<environment>/PEOPLE.md` — شبکهٔ افراد و پروژه‌ها
+- `data/<environment>/KNOWLEDGE.md` — نمایهٔ یافته‌ها، منابع و دارایی‌های قابل‌بازیابی
 - `data/<environment>/MEMORY.md` — ترجیح‌های پایدار و تأییدشده
 - `data/<environment>/INBOX.md` — ورودی خام
 - `data/<environment>/PROJECTS/` — زمینه و تصمیم‌ها، بدون کپی فهرست تسک‌ها

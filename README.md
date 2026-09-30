@@ -6,6 +6,10 @@
 
 نمایشگر: `http://127.0.0.1:8081/app/`
 
+منبع دانش و دارایی‌ها: [صفحهٔ جست‌وجو](app/knowledge.html) با `data/work/KNOWLEDGE.md` برای کارهای شغلی و `data/personal/KNOWLEDGE.md` برای کارهای شخصی. روش ثبت و بازیابی در [راهنمای منبع دانش](system/KNOWLEDGE.ReadOnly.md) آمده است.
+
+داده‌های منبع دانش فقط محلی‌اند و در مخزن عمومی پوش نمی‌شوند؛ برای محیط تازه از [قالب خالی](system/KNOWLEDGE-TEMPLATE.ReadOnly.md) استفاده کن.
+
 اجرا از ریشه: `py -m http.server 8081 --bind 127.0.0.1`
 
 معماری و شیوهٔ استفاده در [راهنمای ثابت](system/README.ReadOnly.md) است. رابط در `app/`؛ داده‌های کاری در `data/work/`؛ داده‌های شخصی در `data/personal/`؛ و اسناد ثابت در `system/` قرار دارند.
