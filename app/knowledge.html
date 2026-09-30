@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>دانش و دارایی‌ها | همراه مدیریت کارها</title><link rel="stylesheet" href="shared.css">
+</head>
+<body><main>
+  <header class="top"><div><h1>دانش و دارایی‌ها</h1><p class="subtitle">اطلاعات و منابع مرتبط با کارها را پیدا کن؛ برای بررسی و راه‌حل، موضوع را در گفت‌وگو مطرح کن.</p></div><p id="source" class="source">در حال خواندن KNOWLEDGE.md…</p></header>
+  <section class="panel" aria-label="جست‌وجوی منبع دانش">
+    <div class="filters">
+      <label>جست‌وجو<input id="search" type="search" placeholder="عنوان، شناسه، تسک، پروژه یا مسیر دارایی"></label>
+      <label>نوع<select id="kind"><option value="">همهٔ موارد</option><option value="knowledge">یافته‌ها</option><option value="asset">دارایی‌ها</option></select></label>
+      <button id="reset" type="button">پاک‌کردن جست‌وجو</button><button id="reload" type="button">به‌روزرسانی</button>
+    </div>
+    <div id="stats" class="stats" aria-live="polite"></div>
+  </section>
+  <div id="error" class="error" hidden></div><div id="empty" class="empty" hidden>موردی با این جست‌وجو پیدا نشد.</div>
+  <section id="knowledge-section" class="group"><h2>یافته‌ها</h2><div id="knowledge-results" class="step-list"></div></section>
+  <section id="asset-section" class="group"><h2>دارایی‌ها</h2><div id="asset-results" class="step-list"></div></section>
+  <p class="foot">منبع دانش فقط‌خواندنی است. برای ثبت یا اصلاح اطلاعات، از گفت‌وگو استفاده کن.</p>
+</main><script src="shared.js"></script><script>
+(() => {
+  const A = window.TaskApp, byId = id => document.getElementById(id);
+  const K = ["شناسه", "عنوان و کاربرد", "ارتباط", "منبع", "اعتبار", "آخرین بررسی"];
+  const D = ["شناسه", "نام و نوع", "مسیر یا پیوند", "کاربرد و ارتباط", "وضعیت دسترسی/اعتبار", "آخرین بررسی"];
+  let knowledge = [], assets = [];
+  A.nav("knowledge");
+  function detail(card, label, value, mono = false) {
+    const p = document.createElement("p"); p.className = "step-meta";
+    const strong = document.createElement("strong"); strong.textContent = label + ": "; p.append(strong);
+    const span = document.createElement(mono ? "code" : "span"); span.textContent = value || "—";
+    if (mono) span.className = "mono knowledge-path";
+    p.append(span); card.append(p);
+  }
+  function cardFor(row, asset) {
+    const card = document.createElement("article"); card.className = "step-card";
+    const title = document.createElement("h3"); title.textContent = row[asset ? "نام و نوع" : "عنوان و کاربرد"];
+    const id = document.createElement("span"); id.className = "kicker"; id.textContent = row["شناسه"];
+    card.append(id, title);
+    if (asset) {
+      detail(card, "مسیر یا پیوند", row["مسیر یا پیوند"].replace(/^`(.*)`$/, "$1"), true);
+      detail(card, "کاربرد و ارتباط", row["کاربرد و ارتباط"]);
+      detail(card, "دسترسی و اعتبار", row["وضعیت دسترسی/اعتبار"]);
+    } else {
+      detail(card, "ارتباط", row["ارتباط"]);
+      detail(card, "منبع", row["منبع"]);
+      detail(card, "اعتبار", row["اعتبار"]);
+    }
+    detail(card, "آخرین بررسی", row["آخرین بررسی"]);
+    return card;
+  }
+  function matches(row, fields, q) { return !q || A.normalize(fields.map(key => row[key]).join(" ")).includes(q); }
+  function render() {
+    const q = A.normalize(byId("search").value), kind = byId("kind").value;
+    const foundK = kind === "asset" ? [] : knowledge.filter(row => matches(row, K, q));
+    const foundA = kind === "knowledge" ? [] : assets.filter(row => matches(row, D, q));
+    const kTarget = byId("knowledge-results"), aTarget = byId("asset-results");
+    kTarget.replaceChildren(...foundK.map(row => cardFor(row, false)));
+    aTarget.replaceChildren(...foundA.map(row => cardFor(row, true)));
+    byId("knowledge-section").hidden = foundK.length === 0;
+    byId("asset-section").hidden = foundA.length === 0;
+    byId("empty").hidden = foundK.length + foundA.length > 0;
+    byId("stats").textContent = "یافته‌ها: " + foundK.length + " از " + knowledge.length + " · دارایی‌ها: " + foundA.length + " از " + assets.length;
+  }
+  async function load() {
+    byId("error").hidden = true;
+    try {
+      let source, emptyTemplate = false;
+      try { source = await A.readData("KNOWLEDGE.md"); }
+      catch { source = await A.read("../system/KNOWLEDGE-TEMPLATE.ReadOnly.md"); emptyTemplate = true; }
+      knowledge = A.parseTable(source, K); assets = A.parseTable(source, D);
+      byId("source").textContent = "محیط " + A.environments[A.environment()] + (emptyTemplate ? " · نمایه هنوز ایجاد نشده است" : " · منبع: KNOWLEDGE.md");
+      render();
+    } catch (error) { A.showError(error); byId("source").textContent = "بارگذاری ناموفق"; }
+  }
+  byId("search").addEventListener("input", render);
+  byId("kind").addEventListener("change", render);
+  byId("reset").addEventListener("click", () => { byId("search").value = ""; byId("kind").value = ""; render(); });
+  byId("reload").addEventListener("click", load);
+  load();
+})();
+</script></body></html>

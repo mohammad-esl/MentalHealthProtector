@@ -39,7 +39,7 @@
   }
   function cell(row, text) { const td = row.insertCell(); td.textContent = text || "—"; return td; }
   function nav(active) {
-    const links = [["tasks", "index.html", "کارها"], ["steps", "steps.html", "قدم‌های روزانه"], ["completed", "completed.html", "انجام‌شده‌ها و تاریخچه"], ["network", "network.html", "شبکهٔ افراد"]];
+    const links = [["tasks", "index.html", "کارها"], ["steps", "steps.html", "قدم‌های روزانه"], ["completed", "completed.html", "انجام‌شده‌ها و تاریخچه"], ["network", "network.html", "شبکهٔ افراد"], ["knowledge", "knowledge.html", "دانش و دارایی‌ها"]];
     const envBar = document.createElement("div"); envBar.className = "environment-bar";
     const envLabel = document.createElement("label"); envLabel.htmlFor = "environment-select"; envLabel.textContent = "محیط تسک‌ها";
     const envSelect = document.createElement("select"); envSelect.id = "environment-select";
