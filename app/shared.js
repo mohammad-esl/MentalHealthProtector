@@ -8,8 +8,10 @@
       const header = splitRow(lines[i]);
       if (!required.every((name) => header.includes(name))) continue;
       const rows = [];
-      for (let j = i + 1; j < lines.length && lines[j].trim().startsWith("|"); j++) {
+      for (let j = i + 1; j < lines.length; j++) {
         const line = lines[j].trim();
+        if (!line) continue;
+        if (!line.startsWith("|")) break;
         if (/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line)) continue;
         const cells = splitRow(line);
         if (cells.length >= header.length) rows.push(Object.fromEntries(header.map((key, index) => [key, cells[index] || "—"])));
@@ -54,5 +56,61 @@
   function showError(error) { const el = document.getElementById("error"); if (el) { el.hidden = false; el.textContent = "بارگذاری اطلاعات انجام نشد: " + error.message; } }
   const dateValue = (value) => /^\d{4}-\d{2}-\d{2}$/.test(value || "") && !Number.isNaN(new Date(value + "T00:00:00").valueOf()) ? new Date(value + "T00:00:00") : null;
   const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
-  window.TaskApp = { normalize, parseTable, read, readData, environment, environments, badge, cell, nav, showError, dateValue, today };
+  const dependencyIds = value => !value || value === "—" ? [] : [...new Set(value.split(/[,،;؛\s]+/).filter(Boolean))];
+  function dependencies(tasks, steps) {
+    const nodes = new Map(), duplicates = new Set();
+    for (const row of [...tasks, ...steps]) {
+      const id = row["شناسه"] || row["شناسهٔ قدم"];
+      if (nodes.has(id)) duplicates.add(id);
+      nodes.set(id, row);
+    }
+    function refs(row) {
+      const own = dependencyIds(row["وابسته به"]);
+      return row["شناسهٔ قدم"] ? [...own, row["شناسهٔ تسک"]] : own;
+    }
+    function invalid(id, path = []) {
+      if (path.includes(id)) return "وابستگی حلقوی: " + [...path, id].join("، ");
+      if (duplicates.has(id)) return "شناسهٔ تکراری: " + id;
+      const row = nodes.get(id);
+      if (!row) return "پیش‌نیاز پیدا نشد: " + id;
+      const own = dependencyIds(row["وابسته به"]), prefix = row["شناسهٔ قدم"] ? "S" : "T";
+      if (own.some(ref => !new RegExp("^" + prefix + "-\\d+$").test(ref))) return "شناسهٔ پیش‌نیاز نامعتبر: " + id;
+      for (const ref of refs(row)) { const error = invalid(ref, [...path, id]); if (error) return error; }
+      return "";
+    }
+    function state(row) {
+      const id = row["شناسه"] || row["شناسهٔ قدم"], error = invalid(id);
+      if (error) return { kind: "blocked", label: "نیازمند اصلاح وابستگی", reason: error };
+      if (["انجام‌شده", "کنارگذاشته‌شده"].includes(row["وضعیت"])) return { kind: "closed", label: "بسته‌شده", reason: "" };
+      const parent = row["شناسهٔ قدم"] ? nodes.get(row["شناسهٔ تسک"]) : null;
+      const required = [...dependencyIds(row["وابسته به"]), ...dependencyIds(parent?.["وابسته به"])];
+      const pending = required.filter(ref => nodes.get(ref)?.["وضعیت"] !== "انجام‌شده");
+      if (pending.length) return { kind: "blocked", label: "در انتظار پیش‌نیاز", reason: pending.join("، ") };
+      if (row["وضعیت"] === "منتظر" || parent?.["وضعیت"] === "منتظر") return { kind: "waiting", label: "منتظر تعیین تکلیف", reason: "پیش‌نیازها مانع نیستند؛ وضعیت ثبت‌شده همچنان منتظر است." };
+      if (parent && ["انجام‌شده", "کنارگذاشته‌شده"].includes(parent["وضعیت"])) return { kind: "closed", label: "تسک مادر بسته‌شده", reason: "" };
+      if (row["وضعیت"] === "نیاز به پاسخ" || parent?.["وضعیت"] === "نیاز به پاسخ") return { kind: "waiting", label: "نیازمند پاسخ", reason: "" };
+      return { kind: "ready", label: "آمادهٔ اجرا", reason: "" };
+    }
+    function view(row) {
+      const result = state(row), box = document.createElement("div"); box.className = "dependencies";
+      const mark = badge(result.label, "readiness"); mark.dataset.state = result.kind; box.append(mark);
+      const parent = row["شناسهٔ قدم"] ? nodes.get(row["شناسهٔ تسک"]) : null;
+      for (const [value, label] of [[row["وابسته به"], "پیش‌نیاز"], [parent?.["وابسته به"], "پیش‌نیاز تسک مادر"]]) {
+        for (const ref of dependencyIds(value)) {
+          const line = document.createElement("div"), code = document.createElement("bdi"), target = nodes.get(ref);
+          code.dir = "ltr"; code.textContent = "[" + ref + "]";
+          line.append(label + ": ", code, " · " + (target?.["عنوان"] || target?.["قدم اتمی"] || "ناموجود") + " · " + (target?.["وضعیت"] || "نامعلوم")); box.append(line);
+        }
+      }
+      if (result.reason) { const note = document.createElement("div"); note.textContent = result.reason; box.append(note); }
+      return box;
+    }
+    return { state, view };
+  }
+  async function dependencyData() {
+    const files = ["TASKS.md", "STEPS.md", "ARCHIVE/completed-tasks.md", "ARCHIVE/completed-steps.md"];
+    const rows = await Promise.all(files.map((file, i) => readData(file).then(text => parseTable(text, [i % 2 ? "شناسهٔ قدم" : "شناسه", "وضعیت"]))));
+    return { tasks: rows[0], steps: rows[1], resolver: dependencies([...rows[0], ...rows[2]], [...rows[1], ...rows[3]]) };
+  }
+  window.TaskApp = { normalize, parseTable, read, readData, environment, environments, badge, cell, nav, showError, dateValue, today, dependencies, dependencyData };
 })();
