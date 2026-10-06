@@ -1,3 +1,8 @@
 # Knowledge entries may contain private work or personal information.
 data/*/KNOWLEDGE.md
 data/*/Knowledge/
+
+# Mission contracts and decisions may include private task information.
+data/*/AGENT-JOBS.md
+data/*/DECISIONS.md
+data/*/AgentJobs/
