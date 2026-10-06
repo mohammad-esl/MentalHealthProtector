@@ -13,32 +13,62 @@
       <label>وضعیت<select id="status"><option value="">همهٔ وضعیت‌ها</option></select></label>
       <label>پروژه<select id="project"><option value="">همهٔ پروژه‌ها</option></select></label>
       <label>موعد<select id="deadline"><option value="">همهٔ موعدها</option><option value="overdue">عقب‌افتاده</option><option value="week">۷ روز آینده</option><option value="none">بدون موعد</option></select></label>
-      <label>آمادگی اجرا<select id="readiness"><option value="">همه</option><option value="ready">آمادهٔ اجرا</option><option value="blocked">در انتظار پیش‌نیاز / خطای وابستگی</option><option value="waiting">منتظر تعیین تکلیف</option></select></label><button id="reset" type="button">پاک‌کردن فیلترها</button><button id="reload" type="button">به‌روزرسانی</button>
+      <label>نوع اقدام<select id="action"><option value="">همهٔ دسته‌ها</option><option value="direct">نیازمند اقدام مستقیم</option><option value="followup">پیگیری/انتظار؛ بدون اقدام مستقیم فعلاً</option><option value="unclear">قدم قابل‌اقدام مشخص نیست</option></select></label><button id="reset" type="button">پاک‌کردن فیلترها</button><button id="reload" type="button">به‌روزرسانی</button>
     </div>
     <div class="stats" aria-live="polite"><span id="count" class="pill">—</span><span id="done" class="pill">—</span><span id="overdueCount" class="pill">—</span></div>
   </section>
   <section class="panel matrix-panel" aria-labelledby="matrix-title">
-    <div class="matrix-heading"><div><h2 id="matrix-title">ماتریس آیزنهاور</h2><p class="kicker">مهم: اولویت فوری یا بالا · فوری: موعد امروز/گذشته یا اولویت فوری. تسک‌های منتظر یا دارای پیش‌نیاز ناتمام و موارد با موعد یا اولویت نامشخص جدا نمایش داده می‌شوند.</p></div><span id="matrix-total" class="pill" aria-live="polite">—</span></div>
+    <div class="matrix-heading"><div><h2 id="matrix-title">ماتریس آیزنهاور</h2><p class="kicker">ماتریس فقط تسک‌هایی را در چهار خانه می‌گذارد که دست‌کم یک قدم باز و آمادهٔ اقدام مستقیم دارند. تسک‌های پیگیری/انتظار و موارد نامشخص جدا هستند. مهم: اولویت فوری یا بالا · فوری: موعد امروز/گذشته یا اولویت فوری.</p></div><span id="matrix-total" class="pill" aria-live="polite">—</span></div>
     <div class="matrix-grid">
       <section class="matrix-quadrant" data-quadrant="do" aria-labelledby="matrix-do-title"><div class="matrix-quadrant-head"><h3 id="matrix-do-title">مهم و فوری <small>انجام</small></h3><span id="matrix-do-count" class="pill">۰</span></div><ol id="matrix-do" class="matrix-list"></ol></section>
       <section class="matrix-quadrant" data-quadrant="delegate" aria-labelledby="matrix-delegate-title"><div class="matrix-quadrant-head"><h3 id="matrix-delegate-title">کم‌اهمیت‌تر و فوری <small>بررسی واگذاری</small></h3><span id="matrix-delegate-count" class="pill">۰</span></div><ol id="matrix-delegate" class="matrix-list"></ol></section>
       <section class="matrix-quadrant" data-quadrant="schedule" aria-labelledby="matrix-schedule-title"><div class="matrix-quadrant-head"><h3 id="matrix-schedule-title">مهم و غیرفوری <small>زمان‌بندی</small></h3><span id="matrix-schedule-count" class="pill">۰</span></div><ol id="matrix-schedule" class="matrix-list"></ol></section>
       <section class="matrix-quadrant" data-quadrant="review" aria-labelledby="matrix-review-title"><div class="matrix-quadrant-head"><h3 id="matrix-review-title">کم‌اهمیت‌تر و غیرفوری <small>بازنگری</small></h3><span id="matrix-review-count" class="pill">۰</span></div><ol id="matrix-review" class="matrix-list"></ol></section>
     </div>
-    <section class="matrix-waiting" aria-labelledby="matrix-waiting-title"><div class="matrix-quadrant-head"><h3 id="matrix-waiting-title">در انتظار</h3><span id="matrix-waiting-count" class="pill">۰</span></div><ol id="matrix-waiting" class="matrix-list"></ol></section>
+    <section class="matrix-waiting" aria-labelledby="matrix-waiting-title"><div class="matrix-quadrant-head"><h3 id="matrix-waiting-title">پیگیری/انتظار؛ اقدام مستقیم فعلاً لازم نیست</h3><span id="matrix-waiting-count" class="pill">۰</span></div><ol id="matrix-waiting" class="matrix-list"></ol></section>
     <section class="matrix-undecided" aria-labelledby="matrix-undecided-title"><div class="matrix-quadrant-head"><h3 id="matrix-undecided-title">نیازمند تعیین اهمیت یا فوریت</h3><span id="matrix-undecided-count" class="pill">۰</span></div><ol id="matrix-undecided" class="matrix-list"></ol></section>
+    <section class="matrix-undecided" aria-labelledby="matrix-unclassified-title"><div class="matrix-quadrant-head"><h3 id="matrix-unclassified-title">قدم قابل‌اقدام مشخص نیست</h3><span id="matrix-unclassified-count" class="pill">۰</span></div><ol id="matrix-unclassified" class="matrix-list"></ol></section>
   </section>
   <div id="error" class="error" hidden></div><div id="empty" class="empty" hidden>تسکی با این فیلترها پیدا نشد.</div>
-  <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>قدم‌ها / زیرتسک‌ها</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>پیش‌نیاز و آمادگی اجرا</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات و گزارش اقدام‌ها</th></tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان</th><th>قدم‌ها / زیرتسک‌ها</th><th>اولویت</th><th>موعد</th><th>وضعیت</th><th>نوع اقدام بعدی</th><th>قدم‌های باز و وضعیت پیش‌نیازها</th><th>پروژه</th><th>قدم بعدی</th><th>دلیل اولویت</th><th>توضیحات و گزارش اقدام‌ها</th></tr></thead><tbody id="rows"></tbody></table></div>
   <p class="foot">فهرست جاری فقط کارهای باز را نشان می‌دهد؛ کارهای بسته‌شده در فایل‌های بایگانی می‌مانند. نمایشگر داده را تغییر نمی‌دهد.</p>
 </main><script src="shared.js"></script><script>
 (() => {
   const A = window.TaskApp, KEYS = ["شناسه","عنوان","قدم‌ها / زیرتسک‌ها","اولویت","موعد","وضعیت","پروژه","خلاصهٔ قدم بعدی","دلیل اولویت","توضیحات"];
-  const order = {"فوری":0,"بالا":1,"متوسط":2,"پایین":3,"نامشخص":4}; let tasks = [], activeTasks = [], resolver;
+  const order = {"فوری":0,"بالا":1,"متوسط":2,"پایین":3,"نامشخص":4}, CLOSED = ["انجام‌شده","کنارگذاشته‌شده"];
+  let tasks = [], steps = [], activeTasks = [], resolver;
   const byId = (id) => document.getElementById(id);
   A.nav("tasks");
+  function taskAction(task) {
+    const open = steps.filter(step=>step["شناسهٔ تسک"]===task["شناسه"]&&!CLOSED.includes(step["وضعیت"]));
+    const evaluated = open.map(step=>({step,state:resolver.state(step)}));
+    const direct = evaluated.filter(item=>item.state.kind==="ready");
+    const pending = evaluated.filter(item=>["waiting","blocked"].includes(item.state.kind));
+    if(direct.length)return {kind:"direct",label:"اقدام مستقیم لازم است",direct,pending};
+    if(pending.length)return {kind:"followup",label:"پیگیری/انتظار؛ اقدام مستقیم فعلاً لازم نیست",direct:[],pending};
+    const parentState=resolver.state(task);
+    if(["waiting","blocked"].includes(parentState.kind))return {kind:"followup",label:"پیگیری/انتظار؛ اقدام مستقیم فعلاً لازم نیست",direct:[],pending:[{step:task,state:parentState}]};
+    return {kind:"unclear",label:"قدم قابل‌اقدام مشخص نیست",direct:[],pending:[],reason:open.length?"قدم باز با وضعیت قابل‌تشخیص ندارد.":"قدم باز ثبت نشده است."};
+  }
+  function actionBadge(mode) { const badge=A.badge(mode.label,"action"); badge.dataset.state=mode.kind; return badge; }
+  function actionDetails(task) {
+    const mode=taskAction(task), box=document.createElement("div"); box.className="action-details";
+    const items=[...mode.direct,...mode.pending];
+    for(const item of items) {
+      const line=document.createElement("div"), id=document.createElement("bdi"), step=item.step, state=A.badge(item.state.label,"readiness"); state.dataset.state=item.state.kind;
+      id.dir="ltr";id.textContent=step["شناسهٔ قدم"]||step["شناسه"]||"—";
+      line.append(state," ",id," · "+(step["قدم اتمی"]||step["عنوان"]||""));
+      if(step["موعد"]&&step["موعد"]!=="—")line.append(" · موعد: "+step["موعد"]);
+      if(item.state.reason)line.append(" · "+item.state.reason);
+      box.append(line);
+    }
+    if(mode.reason){const note=document.createElement("div");note.textContent=mode.reason;box.append(note);}
+    return box;
+  }
   function matrixGroup(task, today) {
-    if(resolver.state(task).kind!=="ready")return "waiting";
+    const mode=taskAction(task);
+    if(mode.kind==="followup")return "waiting";
+    if(mode.kind==="unclear")return "unclassified";
     const priority=task["اولویت"], due=A.dateValue(task["موعد"]);
     const important=["فوری","بالا"].includes(priority) ? true : ["متوسط","پایین"].includes(priority) ? false : null;
     const urgent=priority==="فوری" ? true : due ? due<=today : null;
@@ -46,7 +76,7 @@
     return important ? (urgent ? "do" : "schedule") : (urgent ? "delegate" : "review");
   }
   function renderMatrix(list) {
-    const groups={do:[],delegate:[],schedule:[],review:[],waiting:[],undecided:[]}, today=A.today();
+    const groups={do:[],delegate:[],schedule:[],review:[],waiting:[],undecided:[],unclassified:[]}, today=A.today();
     for(const task of list)groups[matrixGroup(task,today)].push(task);
     for(const [key,items] of Object.entries(groups)) {
       items.sort((a,b)=>{const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&db&&da-db)return da-db;if(da&&!db)return -1;if(!da&&db)return 1;return (order[a["اولویت"]]??4)-(order[b["اولویت"]]??4)||a["شناسه"].localeCompare(b["شناسه"]);});
@@ -58,8 +88,10 @@
         const missing=[];
         if(key==="undecided") { if(!["فوری","بالا","متوسط","پایین"].includes(task["اولویت"]))missing.push("اهمیت نامشخص");if(task["اولویت"]!=="فوری"&&!A.dateValue(task["موعد"]))missing.push("فوریت نامشخص"); }
         meta.textContent=[task["پروژه"],"اولویت: "+task["اولویت"],"موعد: "+task["موعد"],task["وضعیت"],...missing].filter(v=>v&&v!=="—").join(" · ");
-        item.append(link,meta,resolver.view(task));
-        if(task["خلاصهٔ قدم بعدی"]&&task["خلاصهٔ قدم بعدی"]!=="—") {const next=document.createElement("span");next.className="matrix-task-next";next.textContent="قدم بعدی: "+task["خلاصهٔ قدم بعدی"];item.append(next);}
+        item.append(link,meta,actionBadge(taskAction(task)));
+        const mode=taskAction(task), relevant=mode.kind==="direct"?mode.direct:mode.pending;
+        for(const entry of relevant){const next=document.createElement("span"),step=entry.step;next.className="matrix-task-next";next.textContent=(step["شناسهٔ قدم"]||step["شناسه"])+" · "+(step["قدم اتمی"]||step["عنوان"]||"")+(step["موعد"]&&step["موعد"]!=="—"?" · موعد: "+step["موعد"]:"")+(entry.state.reason?" · "+entry.state.reason:"");item.append(next);}
+        if(mode.reason){const next=document.createElement("span");next.className="matrix-task-next";next.textContent=mode.reason;item.append(next);}
         container.append(item);
       }
       if(!items.length){const empty=document.createElement("li");empty.className="matrix-list-empty";empty.textContent="موردی نیست";container.append(empty);}
@@ -69,9 +101,9 @@
   }
   function fill(id, key, label) { const select=byId(id), current=select.value; select.replaceChildren(new Option(label,"")); [...new Set(activeTasks.map(t=>t[key]).filter(v=>v&&v!=="—"))].sort((a,b)=>a.localeCompare(b,"fa")).forEach(v=>select.add(new Option(v,v))); if([...select.options].some(o=>o.value===current))select.value=current; }
   function filtered() {
-    const q=A.normalize(byId("search").value), p=byId("priority").value, s=byId("status").value, project=byId("project").value, mode=byId("deadline").value, now=A.today();
+    const q=A.normalize(byId("search").value), p=byId("priority").value, s=byId("status").value, project=byId("project").value, mode=byId("deadline").value, action=byId("action").value, now=A.today();
     return activeTasks.filter(t=>{
-      if(byId("readiness").value && resolver.state(t).kind!==byId("readiness").value)return false;
+      if(action&&taskAction(t).kind!==action)return false;
       if(q&&!A.normalize([...KEYS.map(k=>t[k]),t["وابسته به"]].join(" ")).includes(q))return false;
       if(p&&t["اولویت"]!==p)return false;if(s&&t["وضعیت"]!==s)return false;if(project&&t["پروژه"]!==project)return false;
       const d=A.dateValue(t["موعد"]);if(mode==="none"&&d)return false;if(mode==="overdue"&&(!d||d>=now||["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"])))return false;
@@ -82,10 +114,10 @@
       const da=A.dateValue(a["موعد"]),db=A.dateValue(b["موعد"]);if(da&&!db)return -1;if(!da&&db)return 1;if(da&&db&&da-db)return da-db;return a["شناسه"].localeCompare(b["شناسه"]);
     });
   }
-  function render(){const body=byId("rows");body.replaceChildren();const list=filtered();for(const t of list){const tr=document.createElement("tr");tr.id="task-"+t["شناسه"];A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);A.cell(tr,t["قدم‌ها / زیرتسک‌ها"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));tr.insertCell().append(resolver.view(t));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}renderMatrix(list);
+  function render(){const body=byId("rows");body.replaceChildren();const list=filtered(),groups=[{kind:"direct",title:"نیازمند اقدام مستقیم"},{kind:"followup",title:"پیگیری/انتظار؛ فعلاً اقدام مستقیم لازم نیست"},{kind:"unclear",title:"قدم قابل‌اقدام مشخص نیست"}];for(const group of groups){const items=list.filter(task=>taskAction(task).kind===group.kind);if(!items.length)continue;const heading=document.createElement("tr"),cell=document.createElement("th");heading.className="task-group-row";cell.colSpan=12;cell.scope="rowgroup";cell.textContent=group.title+" · "+items.length.toLocaleString("fa-IR");heading.append(cell);body.append(heading);for(const t of items){const tr=document.createElement("tr");tr.id="task-"+t["شناسه"];A.cell(tr,t["شناسه"]);A.cell(tr,t["عنوان"]);A.cell(tr,t["قدم‌ها / زیرتسک‌ها"]);tr.insertCell().append(A.badge(t["اولویت"],"priority"));A.cell(tr,t["موعد"]);tr.insertCell().append(A.badge(t["وضعیت"],"status"));tr.insertCell().append(actionBadge(taskAction(t)));tr.insertCell().append(actionDetails(t));A.cell(tr,t["پروژه"]);A.cell(tr,t["خلاصهٔ قدم بعدی"]);A.cell(tr,t["دلیل اولویت"]);A.cell(tr,t["توضیحات"]);body.append(tr);}}renderMatrix(list);
     const open=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));const done=tasks.filter(t=>t["وضعیت"]==="انجام‌شده");const overdue=open.filter(t=>{const d=A.dateValue(t["موعد"]);return d&&d<A.today()});byId("count").textContent=list.length+" از "+open.length+" تسک باز";byId("done").textContent="انجام‌شده: "+done.length;byId("overdueCount").textContent="عقب‌افتاده: "+overdue.length;byId("empty").hidden=list.length>0;}
-  async function load(){byId("error").hidden=true;try{const data=await A.dependencyData();tasks=data.tasks;resolver=data.resolver;activeTasks=tasks.filter(t=>!["انجام‌شده","کنارگذاشته‌شده"].includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="محیط "+A.environments[A.environment()]+" · منابع: تسک‌ها، قدم‌ها و بایگانی";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
-  ["search","priority","status","project","deadline","readiness"].forEach(id=>byId(id).addEventListener("input",render));byId("reset").addEventListener("click",()=>{["search","priority","status","project","deadline","readiness"].forEach(id=>byId(id).value="");render()});byId("reload").addEventListener("click",load);load();
+  async function load(){byId("error").hidden=true;try{const data=await A.dependencyData();tasks=data.tasks;steps=data.steps;resolver=data.resolver;activeTasks=tasks.filter(t=>!CLOSED.includes(t["وضعیت"]));fill("priority","اولویت","همهٔ اولویت‌ها");fill("status","وضعیت","همهٔ وضعیت‌ها");fill("project","پروژه","همهٔ پروژه‌ها");byId("source").textContent="محیط "+A.environments[A.environment()] +" · منابع: تسک‌ها، قدم‌ها و بایگانی";render();}catch(e){A.showError(e);byId("source").textContent="بارگذاری ناموفق";}}
+  ["search","priority","status","project","deadline","action"].forEach(id=>byId(id).addEventListener("input",render));byId("reset").addEventListener("click",()=>{["search","priority","status","project","deadline","action"].forEach(id=>byId(id).value="");render()});byId("reload").addEventListener("click",load);load();
 })();
 </script></body></html>
 
