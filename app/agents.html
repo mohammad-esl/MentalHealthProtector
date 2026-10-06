@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مأموریت‌ها و تصمیم‌ها | همراه مدیریت کارها</title><link rel="stylesheet" href="shared.css"></head>
+<body><main>
+<header class="top"><div><h1>مأموریت‌ها و تصمیم‌ها</h1><p class="subtitle">حدود اختیار پیش از واگذاری مشخص می‌شود؛ تصمیم‌های تازه در گفت‌وگو با شما نهایی می‌شوند.</p></div><p id="source" class="source">در حال خواندن اطلاعات…</p></header>
+<section class="panel" aria-label="فیلتر مأموریت‌ها و تصمیم‌ها"><div class="filters">
+<label>جست‌وجو<input id="search" type="search" placeholder="عنوان، شناسه، نقش یا پرسش"></label>
+<label>وضعیت مأموریت<select id="job-state"><option value="">همهٔ وضعیت‌ها</option></select></label>
+<label>وضعیت تصمیم<select id="decision-state"><option value="منتظر پاسخ">منتظر پاسخ</option><option value="">همهٔ تصمیم‌ها</option><option value="پاسخ‌داده‌شده">پاسخ‌داده‌شده</option><option value="لغوشده">لغوشده</option></select></label>
+<button id="reload" type="button">به‌روزرسانی</button></div><div id="stats" class="stats" aria-live="polite"></div></section>
+<div id="error" class="error" hidden></div>
+<section class="group"><h2>مأموریت‌ها</h2><div id="jobs" class="step-list"></div></section>
+<section class="group"><h2>تصمیم‌ها</h2><div id="decisions" class="step-list"></div></section>
+<section id="document-panel" class="panel" hidden><h2 id="document-title">پروندهٔ مأموریت</h2><button id="close-document" type="button">بستن پرونده</button><pre id="document-content" class="mission-document"></pre></section>
+<p class="foot">این صفحه فقط‌خواندنی است. پایان مأموریت به‌معنی پایان تسک نیست. نمایشگر Agent اجرا نمی‌کند؛ پاسخ و تأیید را در گفت‌وگو اعلام کنید.</p>
+</main><script src="shared.js"></script><script src="agents.js"></script></body></html>
