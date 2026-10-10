@@ -107,10 +107,43 @@
     }
     return { state, view };
   }
-  async function dependencyData() {
-    const files = ["TASKS.md", "STEPS.md", "ARCHIVE/completed-tasks.md", "ARCHIVE/completed-steps.md"];
-    const rows = await Promise.all(files.map((file, i) => readData(file).then(text => parseTable(text, [i % 2 ? "شناسهٔ قدم" : "شناسه", "وضعیت"]))));
-    return { tasks: rows[0], steps: rows[1], resolver: dependencies([...rows[0], ...rows[2]], [...rows[1], ...rows[3]]) };
+  const taskCollections = {
+    tasks: { root: "TASKS.md", project: "تسک‌های جاری" },
+    steps: { root: "STEPS.md", project: "قدم‌های جاری" },
+    completedTasks: { root: "ARCHIVE/completed-tasks.md", project: "تسک‌های بایگانی‌شده" },
+    completedSteps: { root: "ARCHIVE/completed-steps.md", project: "قدم‌های بایگانی‌شده" }
+  };
+  async function taskFileGroups() {
+    const groups = Object.fromEntries(Object.entries(taskCollections).map(([key, value]) => [key, [value.root]]));
+    let index = "";
+    try { index = await readData("PROJECTS/INDEX.md"); }
+    catch (error) {
+      if (!String(error?.message || error).includes("PROJECTS/INDEX.md خوانده نشد")) throw error;
+    }
+    if (!index) return groups;
+    const projects = parseTable(index, ["نام پروژه", ...Object.values(taskCollections).map(value => value.project)]);
+    for (const project of projects) {
+      for (const [key, value] of Object.entries(taskCollections)) {
+        const path = project[value.project];
+        if (path && path !== "—") groups[key].push(path);
+      }
+    }
+    return groups;
   }
-  window.TaskApp = { normalize, parseTable, read, readData, environment, environments, badge, cell, nav, showError, dateValue, today, dependencies, dependencyData };
+  async function readTaskCollection(collection) {
+    const spec = taskCollections[collection];
+    if (!spec) throw new Error("مجموعهٔ تسک معتبر نیست.");
+    const groups = await taskFileGroups();
+    const required = [collection === "steps" || collection === "completedSteps" ? "شناسهٔ قدم" : "شناسه", "وضعیت"];
+    const rows = await Promise.all(groups[collection].map(file => readData(file).then(text => parseTable(text, required))));
+    return rows.flat();
+  }
+  async function dependencyData() {
+    const [tasks, steps, completedTasks, completedSteps] = await Promise.all([
+      readTaskCollection("tasks"), readTaskCollection("steps"),
+      readTaskCollection("completedTasks"), readTaskCollection("completedSteps")
+    ]);
+    return { tasks, steps, resolver: dependencies([...tasks, ...completedTasks], [...steps, ...completedSteps]) };
+  }
+  window.TaskApp = { normalize, parseTable, read, readData, readTaskCollection, environment, environments, badge, cell, nav, showError, dateValue, today, dependencies, dependencyData };
 })();
